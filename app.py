@@ -1,6 +1,6 @@
 #python 3.11.7 (base: conda)
 
-#Abhängigkeiten/Bibliotheken, die benötigt werden
+# Abhängigkeiten/Bibliotheken, die benötigt werden
 import os
 import logging
 from flask import Flask, request, jsonify, render_template
@@ -17,12 +17,12 @@ CORS(app)
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-@app.route('/') #Aufruf der Seite von backend, kommt aus der flask
+@app.route('/') # Aufruf der Seite von backend, kommt aus der flask
 def home(): #
     return render_template('index.html') 
     return "Das Backend ist betriebsbereit!"
 
-#Beginn Fallbeispiel
+# Beginn Fallbeispiel
 @app.route('/generate-task', methods=['POST'])
 def generate_task():
     global letzte_Aufgabenstellung
@@ -52,9 +52,9 @@ def generate_task():
             "Art. 14 Abs. 1: Das Eigentum und das Erbrecht werden gewährleistet. Inhalt und Schranken werden durch die Gesetze bestimmt."
         ]
 
-        text = random.choice (texte) #zufälliger Artikel wird ausgesucht
+        text = random.choice (texte) # zufälliger Artikel wird ausgesucht
 
-        #individuelle Lücke 
+        # individuelle Lücke 
         if context == 'Schutzbereich':
             fragestellung = "Die Fragestellung soll das Format: Ist der Schutzbereich des Artikels eröffent (konkreter Artikel) haben"
             obersatz = "Der Obersatz lautet immer: Fraglich ist, ob der Schutzbereich eröffnet ist."
@@ -74,7 +74,7 @@ def generate_task():
             aufbau = "Prüfe in der Rechtfertigung nur die Verhältnismäßigkeit mit dem Aufbau 1. legitimer Zweck 2. Geeignetheit 3. Erforderlichkeit 4. Angemessenheit)"
             loesung = "Gebe nur die Lösung zur Rechtfertigung aus."
     
-        #Frage an openai wird gesendet
+        # Frage an openai wird gesendet
         response = openai.chat.completions.create(
             model="gpt-4",
             messages=[
@@ -83,10 +83,10 @@ def generate_task():
             ]
         )
 
-        generated_text = response.choices[0].message.content #generiertes Fallbeipsiel wird geladen
-        #print(f"Generierte Aufgabenstellung: {generated_text}") #terminalausgabe
+        generated_text = response.choices[0].message.content # generiertes Fallbeipsiel wird geladen
+        # print(f"Generierte Aufgabenstellung: {generated_text}") #terminalausgabe
         letzte_Aufgabenstellung = generated_text
-    except Exception as e: #Fehlerbehebung, um Errormessage zu bekommen im Terminal
+    except Exception as e: # Fehlerbehebung, um Errormessage zu bekommen im Terminal
         print(f"Fehler bei der Generierung: {e}") 
         return jsonify({"error": str(e)}), 500
     return jsonify({'code': generated_text})
@@ -95,12 +95,12 @@ def estimate_tokens(text):
     return len(text.split())
 
 
-#beginn Musterlösung
+# Beginn Musterlösung
 @app.route('/musterloesungsendpunkt', methods=['POST'])
 def sample_solution_endpoint():
     try:
         data = request.json
-        task_text = data['taskText'] #tast_text ist die Aufgabenstellung
+        task_text = data['taskText'] # tast_text ist die Aufgabenstellung
         print(letzte_Aufgabenstellung)
         # Musterlösung Anfrage
         response_musterloesung = openai.chat.completions.create(
@@ -118,7 +118,7 @@ def sample_solution_endpoint():
         return jsonify({"error": str(e)}), 500
 
 
-#Beginn Verbesserungsvorschlag
+# Beginn Verbesserungsvorschlag
 @app.route('/optimierungsendpunkt', methods=['POST'])
 def optimization_endpoint():
     try:

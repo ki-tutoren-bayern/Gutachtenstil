@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gutachtenstil im Grundrecht</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .box {
+            flex: 1;
+            max-width: 50%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: calc(100% - 40px);
+            height: auto;
+            min-height: 150px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 16px;
+            resize: none;
+            overflow-y: hidden;
+        }
+        button {
+            background-color: #12424b;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        pre {
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+        #executionResult {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #ccd;
+            border-radius: 5px;
+        }
+        .loadingGif {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #syntaxTree img {
+            max-width: 100%;
+            height: auto;
+        }
+
+
+        .ring-loader {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+        }
+        .ring-loader:after {
+            content: " ";
+            display: inline-block;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border-radius: 50%;
+            border: 6px solid #000000;
+            border-color: #000000 transparent #000000 transparent;
+            animation: ring-loader-spin 1.2s linear infinite;
+        }
+
+        .code-example {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #333;
+        }
+
+        @keyframes ring-loader-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="box">
+        <h2>Wähle den Bereich aus!</h2>
+        <button onclick="generateTask('Schutzbereich')">Schutzbereich</button>
+        <button onclick="generateTask('Eingriff')">Eingriff</button>
+        <button onclick="generateTask('Rechtfertigung')">Rechtfertigung</button>       
+    </div>
+</div>
+
+<div class="container">
+    <div class="box">
+        <h2>Sachverhalt:</h2>
+        <pre id="aufgabenstellung"></pre>
+        <h2>Lösen Sie dieses Fallbeispiel</h2>
+        <textarea id="studentSolution" rows="4" placeholder="Geben Sie Ihre Lösung hier ein"></textarea>
+        <button id="submitSolution" onclick="submitSolutionForOptimization()">Korregiere meine Lösung</button>
+        <button id="generateSampleSolution" onclick="generateSampleSolution()">Generiere Musterlösung</button>
+        <div id="loadingGifOutput" class="ring-loader" style="display: none;"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="box">
+        <h2>Musterlösung:</h2>
+        <pre id="musterloesung"> </pre>
+    </div>   
+</div>
+
+<div class="container">
+    <div class="box">
+        <h2>Verbesserungsvorschlag:</h2>
+        <pre id="optimierungsvorschlaege"></pre>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('submitSolution').addEventListener('click', generateFeedback);
+});
+
+async function generateTask(context) {
+    document.getElementById('loadingGifOutput').style.display = 'block';
+    const response = await fetch('/generate-task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context: context })
+    });
+    const result = await response.json();
+    if (response.ok) {
+        document.getElementById('aufgabenstellung').textContent = result.code;
+    } else {
+        console.error('Fehler beim Laden der Aufgabenstellung.');
+    }
+    document.getElementById('loadingGifOutput').style.display = 'none';
+}
+
+async function submitSolutionForOptimization() {
+    const taskText = document.getElementById('aufgabenstellung').innerText;
+    const studentSolution = document.getElementById('studentSolution').value;
+
+    document.getElementById('loadingGifOutput').style.display = 'block';
+
+    try {
+        const response = await fetch('/optimierungsendpunkt', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ taskText, studentSolution }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Netzwerkantwort war nicht ok.');
+        }
+
+        const data = await response.json();
+        document.getElementById('optimierungsvorschlaege').innerText = data.optimierungsvorschlag;
+
+    } catch (error) {
+        console.error('Fehler beim Abrufen der Optimierungsvorschläge:', error);
+    } finally {
+
+        document.getElementById('loadingGifOutput').style.display = 'none';
+    }
+}
+
+async function generateSampleSolution() {
+    const taskText = document.getElementById('aufgabenstellung').innerText;
+
+    document.getElementById('loadingGifOutput').style.display = 'block';
+
+    try {
+        const response = await fetch('/musterloesungsendpunkt', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ taskText }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Netzwerkantwort war nicht ok.');
+        }
+
+        const data = await response.json();
+        document.getElementById('musterloesung').innerText = data.musterloesung;
+
+    } catch (error) {
+        console.error('Fehler beim Abrufen der Musterlösung:', error);
+    } finally {
+
+        document.getElementById('loadingGifOutput').style.display = 'none';
+    }
+}
+
+
+</script>
+</body>
+</html>

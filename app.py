@@ -75,7 +75,7 @@ def generate_task():
             loesung = "Gebe nur die Lösung zur Rechtfertigung aus."
     
         # Frage an openai wird gesendet
-        response = openai.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": f"Du bist an der juristitschen Universität Professor am Lehrstuhl öffentliches Recht und liest die Vorlesung Grundrechte in Bayern. In der Vorlesung über Grundrechte lehrt der Professor am Lehrstuhl für öffentliches Recht den Studierenden die Begründetheit der Verfassungsbeschwerde vor dem Bundesverfassungsgericht gemäß Art. 93 I Nr. 4a des Grundgesetzes. Die Begründetheit der Verfassungsbeschwerde hat den Aufbau 1.Schutzbereich 2. Eingriff 3. Rechtfertigung. Die Studenten sollen durch kurze Fallbeipsiel den juristischen Gutachtenstil erlernen."},
@@ -103,7 +103,7 @@ def sample_solution_endpoint():
         task_text = data['taskText'] # tast_text ist die Aufgabenstellung
         print(letzte_Aufgabenstellung)
         # Musterlösung Anfrage
-        response_musterloesung = openai.chat.completions.create(
+        response_musterloesung = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Du bist an der juristischen Universität Professor am Lehrstuhl öffentliches Recht und liest die Vorlesung Grundrechte in Bayern. In der Vorlesung über Grundrechte lehrt der Professor am Lehrstuhl für öffentliches Recht den Studierenden die Begründetheit der Verfassungsbeschwerde vor dem Bundesverfassungsgericht gemäß Art. 93 I Nr. 4a des Grundgesetzes. Du erstellt zu deinen Aufgabenstellungen eine juristische Musterlösung im Gutachtenstil. Der Gutachtentil fängt immer mit einem Obersatz hat, danach folgt eine Definiton und dann eine Subsumtion. "},
@@ -126,7 +126,7 @@ def optimization_endpoint():
         task_text = data['taskText']
         student_solution = data['studentSolution']
 
-        response_optimierung = openai.chat.completions.create(
+        response_optimierung = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Du bist an der juristischen Universität Professor am Lehrstuhl öffentliches Recht und liest die Vorlesung Grundrechte in Bayern. In der Vorlesung über Grundrechte lehrt der Professor am Lehrstuhl für öffentliches Recht den Studierenden die Begründetheit der Verfassungsbeschwerde vor dem Bundesverfassungsgericht gemäß Art. 93 I Nr. 4a des Grundgesetzes. Erstelle zu den studentischen Lösungen Verbesserungsvorschläge."}, #pormpt für Muserlösung

@@ -40,6 +40,8 @@ def generate_task():
 
     try:
         data = request.get_json()
+        logging.info(f"Eingangsdaten: {data}")
+
         if not data:
             raise ValueError("No JSON payload received")
         context = data['context']
@@ -75,20 +77,20 @@ def generate_task():
             definition = "Definiere im persönlichen Schutzbereich wen das Grundrecht schützt und im sachlichen Schutzbereich welches Verhalten geschützt wird."
             aufbau = "Zuerst immer den persönlichen und dann den sachlichen Schutzbereich prüfen. Aufbauschema 1. Schutzbereich a. persönlicher Schutzbereich b. sachlicher Schutzbereich"
             loesung = "Gebe nur die Lösung zum Schutzbereich aus"
-        if context == 'Eingriff':
+        elif context == 'Eingriff':
             fragestellung = "Die Fragestellung hat das Format: Ist ein Eingriff in den jeweiligen Artikel (konkreter Artikel) gegeben"
             obersatz = "Der Obersatz lautet immer: Fraglich ist, ob ein Eingriff in den jeweiligen Artikel (konkreter Artikel) gegeben ist"
             definition = "Der klassische Eingriff ist eine hoheitliche Maßnahme, die grundrechtlich gewährliestete Freiheit zielgerichtet, unmittelbar, rechtsförmig und zwingend mindert. Nach dem modernen Eingriffsbegriff ist jedes der öffentlichen Gewalt zurechnbare Handeln, das dem Grundrechtsträger ein grundrechtlich gewährleistetes Verhalten ganz oder teilwese unmöglich macht."
             aufbau = "Gehe  immer zuerst auf den klassischen Eingriffbegriff ein und dann auf den modernen Eingriffsbegriff. Aufbauschema 1. Eingriff a. klassicher Eingriff b. moderner Eingriff"
             loesung = "Gebe nur die Lösung zum Eingriff aus"
-        if context == 'Rechtfertigung':
+        elif context == 'Rechtfertigung':
             fragestellung = "Die Fragestellung soll das Format: Ist der Eingriff verhältnismäßig (konkreter Artikel) haben"
             obersatz = "Der Obersatz lautet immer: Fraglich ist, ob der Eingriff verhältnismäßig ist."
             definition = " Legitimer Zweck = Der Zweck der Maßnahme ist legitim, wenn er auf das Wohl der Allgemeinheit gerichtet oder wenn für den Zweck eine staatlicher Schutzauftrab besteht. Geeignetheit = Geeignet ist eine Maßnahme, welche die Zweckerreichung zumindest fördert, Erfoderlichkeit = Erfoderlichkeit bedeutet, dass es kein gleich wirksames, aber milderes Mittel gibt, also das relatriv mildeste Mittel gewählt wurde, Angemessenheit = Die Maßnahme ist angemessen, wenn die Zweck-Mittel-Relation nicht außer verhältnis steht"
             aufbau = "Prüfe in der Rechtfertigung nur die Verhältnismäßigkeit mit dem Aufbau 1. legitimer Zweck 2. Geeignetheit 3. Erforderlichkeit 4. Angemessenheit)"
             loesung = "Gebe nur die Lösung zur Rechtfertigung aus."
         else: 
-            raise ValueError("Invalid context")
+            raise ValueError("ungültiger Kontext")
         
         logging.info("Senden der Anfrage an OpenAI")
     

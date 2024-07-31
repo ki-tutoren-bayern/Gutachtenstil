@@ -154,17 +154,21 @@ async function generateTask(context) {
             body: JSON.stringify({ context: context })
         });
 
-        const result = await response.json();
-
-        if (response.ok) {
-            document.getElementById('aufgabenstellung').textContent = result.code;
-        } else {
-            console.error('Fehler beim Laden der Aufgabenstellung.');
-            alert('Fehler: ${result.error}');
+        // Prüfen, ob die Antwort erfolgreich war
+        if (!response.ok) {
+            const result = await response.json();
+            console.error('Fehler beim Laden der Aufgabenstellung:', result.error);
+            alert(`Fehler: ${result.error}`);
+            return;
         }
+
+        // JSON-Daten von der Antwort abrufen
+        const result = await response.json();
+        document.getElementById('aufgabenstellung').textContent = result.code;
+
     } catch (err) {
-        console.error('Fehler beim Laden der Aufgabenstellung:', result.error);
-        alert('Fehler: ${result.error}');
+        console.error('Fehler beim Laden der Aufgabenstellung:', err);
+        alert(`Fehler: ${err.message}`);
     } finally {
         document.getElementById('loadingGifOutput').style.display = 'none';
     }
@@ -227,8 +231,6 @@ async function generateSampleSolution() {
         document.getElementById('loadingGifOutput').style.display = 'none';
     }
 }
-
-
 </script>
 </body>
 </html>

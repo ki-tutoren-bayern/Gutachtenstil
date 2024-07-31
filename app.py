@@ -9,6 +9,7 @@ from flask_cors import CORS
 import webbrowser
 from threading import Timer
 import random   
+import traceback
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,7 +35,9 @@ def generate_task():
 
     try:
         data = request.get_json()
+        print("Eingangsdaten:", data)
         context = data['context']
+        print("Context:", context)
 
         texte = [
             "Art. 2 Abs. 1: Jeder hat das Recht auf die freie Entfaltung seiner Persönlichkeit, soweit er nicht die Rechte anderer verletzt und nicht gegen die verfassungsmäßige Ordnung oder das Sittengesetz verstößt.",
@@ -53,6 +56,7 @@ def generate_task():
         ]
 
         text = random.choice (texte) # zufälliger Artikel wird ausgesucht
+        print("Text:", text)
 
         # individuelle Lücke 
         if context == 'Schutzbereich':
@@ -75,7 +79,8 @@ def generate_task():
             loesung = "Gebe nur die Lösung zur Rechtfertigung aus."
     
         # Frage an openai wird gesendet
-        response = openai.ChatCompletion.create(
+        print("Senden der Anfrage an OpenAI")
+        response = openai.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": f"Du bist an der juristitschen Universität Professor am Lehrstuhl öffentliches Recht und liest die Vorlesung Grundrechte in Bayern. In der Vorlesung über Grundrechte lehrt der Professor am Lehrstuhl für öffentliches Recht den Studierenden die Begründetheit der Verfassungsbeschwerde vor dem Bundesverfassungsgericht gemäß Art. 93 I Nr. 4a des Grundgesetzes. Die Begründetheit der Verfassungsbeschwerde hat den Aufbau 1.Schutzbereich 2. Eingriff 3. Rechtfertigung. Die Studenten sollen durch kurze Fallbeipsiel den juristischen Gutachtenstil erlernen."},
@@ -84,16 +89,16 @@ def generate_task():
         )
 
         generated_text = response.choices[0].message.content # generiertes Fallbeipsiel wird geladen
-        # print(f"Generierte Aufgabenstellung: {generated_text}") #terminalausgabe
+        print(f"Generierte Aufgabenstellung: {generated_text}") #terminalausgabe
         letzte_Aufgabenstellung = generated_text
     except Exception as e: # Fehlerbehebung, um Errormessage zu bekommen im Terminal
-        print(f"Fehler bei der Generierung: {e}") 
+        print(f"Fehler bei der Generierung: {e}")
+        print(traceback.format_exc()) 
         return jsonify({"error": str(e)}), 500
     return jsonify({'code': generated_text})
 
 def estimate_tokens(text):
     return len(text.split())
-
 
 # Beginn Musterlösung
 @app.route('/musterloesungsendpunkt', methods=['POST'])
@@ -103,7 +108,7 @@ def sample_solution_endpoint():
         task_text = data['taskText'] # tast_text ist die Aufgabenstellung
         print(letzte_Aufgabenstellung)
         # Musterlösung Anfrage
-        response_musterloesung = openai.ChatCompletion.create(
+        response_musterloesung = openai.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Du bist an der juristischen Universität Professor am Lehrstuhl öffentliches Recht und liest die Vorlesung Grundrechte in Bayern. In der Vorlesung über Grundrechte lehrt der Professor am Lehrstuhl für öffentliches Recht den Studierenden die Begründetheit der Verfassungsbeschwerde vor dem Bundesverfassungsgericht gemäß Art. 93 I Nr. 4a des Grundgesetzes. Du erstellt zu deinen Aufgabenstellungen eine juristische Musterlösung im Gutachtenstil. Der Gutachtentil fängt immer mit einem Obersatz hat, danach folgt eine Definiton und dann eine Subsumtion. "},
@@ -126,7 +131,7 @@ def optimization_endpoint():
         task_text = data['taskText']
         student_solution = data['studentSolution']
 
-        response_optimierung = openai.ChatCompletion.create(
+        response_optimierung = openai.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Du bist an der juristischen Universität Professor am Lehrstuhl öffentliches Recht und liest die Vorlesung Grundrechte in Bayern. In der Vorlesung über Grundrechte lehrt der Professor am Lehrstuhl für öffentliches Recht den Studierenden die Begründetheit der Verfassungsbeschwerde vor dem Bundesverfassungsgericht gemäß Art. 93 I Nr. 4a des Grundgesetzes. Erstelle zu den studentischen Lösungen Verbesserungsvorschläge."}, #pormpt für Muserlösung

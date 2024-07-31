@@ -147,18 +147,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function generateTask(context) {
     document.getElementById('loadingGifOutput').style.display = 'block';
-    const response = await fetch('/generate-task', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ context: context })
-    });
-    const result = await response.json();
-    if (response.ok) {
-        document.getElementById('aufgabenstellung').textContent = result.code;
-    } else {
-        console.error('Fehler beim Laden der Aufgabenstellung.');
+    try {
+        const response = await fetch('/generate-task', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ context: context })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            document.getElementById('aufgabenstellung').textContent = result.code;
+        } else {
+            console.error('Fehler beim Laden der Aufgabenstellung.');
+            alert('Fehler: ${result.error}');
+        }
+    } catch (err) {
+        console.error('Fehler beim Laden der Aufgabenstellung:', result.error);
+        alert('Fehler: ${result.error}');
+    } finally {
+        document.getElementById('loadingGifOutput').style.display = 'none';
     }
-    document.getElementById('loadingGifOutput').style.display = 'none';
 }
 
 async function submitSolutionForOptimization() {
@@ -186,7 +195,6 @@ async function submitSolutionForOptimization() {
     } catch (error) {
         console.error('Fehler beim Abrufen der Optimierungsvorschläge:', error);
     } finally {
-
         document.getElementById('loadingGifOutput').style.display = 'none';
     }
 }

@@ -16,7 +16,12 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 CORS(app)
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
+api_key = os.getenv('OPENAI_API_KEY')
+if not api_key:
+    logging.error("OPENAI_API_KEY is not set")
+else:
+    openai.api_key = api_key
+    logging.info("Successfully loaded OPENAI_API_KEY")
 
 @app.route('/') # Aufruf der Seite von backend, kommt aus der flask
 def home(): #
@@ -35,9 +40,14 @@ def generate_task():
 
     try:
         data = request.get_json()
-        print("Eingangsdaten:", data)
+        if not data:
+            raise ValueError("No JSON payload received")
         context = data['context']
-        print("Context:", context)
+        if not context:
+            raise ValueError("No context provided in the payload")
+        
+        logging.info(f"Eingangsdaten: {data}")
+        logging.info(f"Context: {context}")
 
         texte = [
             "Art. 2 Abs. 1: Jeder hat das Recht auf die freie Entfaltung seiner Persönlichkeit, soweit er nicht die Rechte anderer verletzt und nicht gegen die verfassungsmäßige Ordnung oder das Sittengesetz verstößt.",
@@ -56,7 +66,7 @@ def generate_task():
         ]
 
         text = random.choice (texte) # zufälliger Artikel wird ausgesucht
-        print("Text:", text)
+        logging.info(f"Text: {text}")
 
         # individuelle Lücke 
         if context == 'Schutzbereich':
@@ -77,9 +87,12 @@ def generate_task():
             definition = " Legitimer Zweck = Der Zweck der Maßnahme ist legitim, wenn er auf das Wohl der Allgemeinheit gerichtet oder wenn für den Zweck eine staatlicher Schutzauftrab besteht. Geeignetheit = Geeignet ist eine Maßnahme, welche die Zweckerreichung zumindest fördert, Erfoderlichkeit = Erfoderlichkeit bedeutet, dass es kein gleich wirksames, aber milderes Mittel gibt, also das relatriv mildeste Mittel gewählt wurde, Angemessenheit = Die Maßnahme ist angemessen, wenn die Zweck-Mittel-Relation nicht außer verhältnis steht"
             aufbau = "Prüfe in der Rechtfertigung nur die Verhältnismäßigkeit mit dem Aufbau 1. legitimer Zweck 2. Geeignetheit 3. Erforderlichkeit 4. Angemessenheit)"
             loesung = "Gebe nur die Lösung zur Rechtfertigung aus."
+        else: 
+            raise ValueError("Invalid context")
+        
+        logging.info("Senden der Anfrage an OpenAI")
     
         # Frage an openai wird gesendet
-        print("Senden der Anfrage an OpenAI")
         response = openai.chat.completions.create(
             model="gpt-4",
             messages=[
@@ -88,12 +101,16 @@ def generate_task():
             ]
         )
 
+        if not response.choices or len(response.choices) == 0:
+            raise ValueError("Empty response from OpenAI")
+
         generated_text = response.choices[0].message.content # generiertes Fallbeipsiel wird geladen
-        print(f"Generierte Aufgabenstellung: {generated_text}") #terminalausgabe
+        logging.info(f"Generierte Aufgabenstellung: {generated_text}")
         letzte_Aufgabenstellung = generated_text
+        return jsonify({'code': generated_text})
     except Exception as e: # Fehlerbehebung, um Errormessage zu bekommen im Terminal
-        print(f"Fehler bei der Generierung: {e}")
-        print(traceback.format_exc()) 
+        logging.error(f"Fehler bei der Generierung: {str(e)}")
+        logging.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
     return jsonify({'code': generated_text})
 

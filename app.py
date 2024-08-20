@@ -3,13 +3,14 @@
 # Abhängigkeiten/Bibliotheken, die benötigt werden
 import os
 import logging
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for, render_template
 import openai
 from flask_cors import CORS
 import webbrowser
 from threading import Timer
 import random   
 import traceback
+
 
 logging.basicConfig(level=logging.INFO)
 
